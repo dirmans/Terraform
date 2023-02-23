@@ -2,21 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0-jammy AS base
 WORKDIR /src
 
-# Copy csproj and restore
-COPY *.csproj ./
-RUN dotnet restore
-
 # Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o app
+COPY . .
+RUN dotnet publish "weatherapi.csproj" -c Release -o /app
 
 # Generate runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy as final
 
-WORKDIR /src
+WORKDIR /app
+COPY --from=base /app .
 
-EXPOSE 80
-
-COPY --from=base /src/app .
+EXPOSE 9000
 
 ENTRYPOINT ["dotnet", "weatherapi.dll"]
